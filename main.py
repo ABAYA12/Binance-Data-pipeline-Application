@@ -98,10 +98,10 @@ def main():
 
     # Upload CSV data to S3 bucket
     s3 = boto3.client('s3',
-                      aws_access_key_id='YOUR_ACCESS_KEY_ID',
-                      aws_secret_access_key='YOUR_SECRET_ACCESS_KEY')
+                      aws_access_key_id='AKIAZQ3DQVW5HEBI465G',
+                      aws_secret_access_key='uGJ1LUFKaCqF4RaHyMgUvB7Skj9FqPQXMRJ8lAfP')
 
-    bucket_name = 'your-s3-bucket-name'
+    bucket_name = 'binance-data-trestleacademy'
     file_name = 'history_data.csv'
 
     # persist data
