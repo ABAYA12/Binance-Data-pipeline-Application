@@ -5,6 +5,7 @@ from binance.client import Client  # Importing Binance API client
 from tqdm import tqdm  # Importing tqdm for progress bars
 import pandas as pd  # Importing pandas for data manipulation
 import datetime  # Importing datetime for handling date and time
+import zipfile
 import boto3  # Importing Boto3 for AWS S3 integration
 from io import StringIO  # Importing StringIO for file handling
 
@@ -102,6 +103,10 @@ def main():
 
     bucket_name = 'your-s3-bucket-name'
     file_name = 'history_data.csv'
+
+    # persist data
+    with zipfile.ZipFile('history_data.zip', 'w') as zip_file:
+        zip_file.writestr('history_data.csv', csv_buffer.getvalue())
 
     s3.put_object(Bucket=bucket_name, Key=file_name,
                   Body=csv_buffer.getvalue())
