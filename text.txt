@@ -44,12 +44,5 @@ def persist_to_snowflake(bucket_name, file_name, user, password, account, wareho
 
     finally:
         # Close cursor and connection
-        try:
-            cursor.close()
-        except:
-            pass
-
-        try:
-            ctx.close()
-        except:
-            pass
+        cursor.close()
+        ctx.close()

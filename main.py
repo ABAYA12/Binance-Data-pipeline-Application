@@ -65,17 +65,18 @@ def main():
     csv_data = save_to_csv(df, 'history_data.csv')
 
     # Upload CSV data to S3 and grant permissions
-    bucket_name = 'binance_2024_data'
+    bucket_name = 'binance-trestle-data-2024'
     file_name = 'history_data.csv'
     url = upload_to_s3_and_grant_permissions(csv_data, bucket_name, file_name)
+    print(f'\nLINK TO GENERATED DATA: {url}\n')
 
     # Persist data to Snowflake data warehouse
-    User = 'Slynos'
+    User = 'SLYNOS'
     Password = 'Cloud1ngineering'
-    Account = 'ACCOUNTADMIN'
-    Database = 'Binance_Data'
-    Warehouse = 'Binance'
-    Role = 'ownership'
+    Account = 'qeb24678.us-east-1'
+    Database = 'BINANCE_DATA'
+    Warehouse = 'BINANCE'
+    Role = 'ACCOUNTADMIN'
     persist_to_snowflake(csv_data, user=User, password=Password,
                          account=Account, database=Database,
                          warehouse=Warehouse, role=Role, file_name=Role)
