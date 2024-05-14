@@ -15,7 +15,7 @@ from io import StringIO  # Importing StringIO for file handling
 def example_get_historical_klines(client):
     # Define pairs to fetch historical data for
     pairs = ["BTCUSDT", "BNBUSDT", "ETHUSDT", "XRPUSDT",
-             "LTCUSDT", "ADAUSDT"]  # Adding 3 more pairs
+             "LTCUSDT", "ADAUSDT", "DOTUSDT", "SOLUSDT", "DOGEUSDT", "AVAXUDST"]  # Adding 3 more pairs
     start_date = "1 Jan, 2024"
     end_date = "31 Dec, 2024"
 
