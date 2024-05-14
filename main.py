@@ -68,7 +68,7 @@ def main():
     bucket_name = 'binance-trestle-data-2024'
     file_name = 'history_data.csv'
     url = upload_to_s3_and_grant_permissions(csv_data, bucket_name, file_name)
-    print(f'\nLINK TO GENERATED DATA: {url}\n')
+    print(f'CLICK ON LINK BELOW TO GET DATA IN ".csv"\n--->>> {url}')
 
     # Persist data to Snowflake data warehouse
     User = 'SLYNOS'
@@ -85,7 +85,7 @@ def main():
     Host = 'localhost'
     Database = 'Binance_DB'
     User = 'postgres'
-    Password = 'p@szw3rd'
+    Password = 'post123'
 
     persist_to_postgres(csv_data, host=Host, database=Database,
                         user=User, password=Password,

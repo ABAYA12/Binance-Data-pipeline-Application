@@ -17,8 +17,9 @@ def persist_to_snowflake(bucket_name, file_name, user, password, account, wareho
         )
         cursor = ctx.cursor()
 
-        # Create a temporary stage in Snowflake
-        stage_name = f"tmp_stage_{file_name.replace('.', '_')}"
+        # Create a temporary stage in Snowflake with a qualified name
+        stage_name = f"{database}.public.tmp_stage_{
+            file_name.replace('.', '_')}"
         cursor.execute(f"CREATE OR REPLACE STAGE {stage_name}")
 
         # Download data from S3
@@ -44,12 +45,5 @@ def persist_to_snowflake(bucket_name, file_name, user, password, account, wareho
 
     finally:
         # Close cursor and connection
-        try:
-            cursor.close()
-        except:
-            pass
-
-        try:
-            ctx.close()
-        except:
-            pass
+        cursor.close()
+        ctx.close()
