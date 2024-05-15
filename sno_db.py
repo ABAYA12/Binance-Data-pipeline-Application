@@ -1,53 +1,30 @@
-# pip install python-binance tqdm pandas boto3 psycopg2 snowflake-connector-python
-
-# Import necessary libraries
-from binance.client import Client  # Importing Binance API client
-from tqdm import tqdm  # Importing tqdm for progress bars
-import pandas as pd  # Importing pandas for data manipulation
-import datetime  # Importing datetime for handling date and time
+# binance_data.py
+from postgres_integration import persist_to_postgres
+from snowflake_integration import persist_to_snowflake
+from s3_integration import upload_to_s3_and_grant_permissions
+from binance_data import initialize_binance_client, get_historical_klines, timestamp_to_datetime
+import pandas as pd
+from io import BytesIO
 import zipfile
-import boto3  # Importing Boto3 for AWS S3 integration
-from io import StringIO  # Importing StringIO for file handling
-import psycopg2  # Importing psycopg2 for PostgreSQL integration
-import snowflake.connector  # Importing snowflake connector for Snowflake integration
+import snowflake.connector
+from io import StringIO
+import boto3
+from binance.client import Client
+from tqdm import tqdm
+import datetime
 
-# Binance API credentials
 API_KEY = "IRmKve67nP3ewFyGSdSAs5RKTrHjgjJ5BLu6gCiX2y1dbhUqqohSTvMcI4Qosuid"
 API_SECRET = "sRVPKcsjYqpLNMrtcqkIilnbEcBDBuCif7xY8833deQDVZd9HoysyUaIEhD66juJ"
-
-# AWS credentials
-AWS_KEY_ID = 'AKIAZQ3DQVW5HEBI465G'
-AWS_SECRET_ACCESS_KEY = 'uGJ1LUFKaCqF4RaHyMgUvB7Skj9FqPQXMRJ8lAfP'
-
-# Snowflake credentials
-SNOWFLAKE_USER = 'Slynos'
-SNOWFLAKE_PASSWORD = 'YOUR_SNOWFLAKE_PASSWORD'
-SNOWFLAKE_ACCOUNT = 'YOUR_SNOWFLAKE_ACCOUNT'
-SNOWFLAKE_DATABASE = 'YOUR_SNOWFLAKE_DATABASE'
-SNOWFLAKE_WAREHOUSE = 'YOUR_SNOWFLAKE_WAREHOUSE'
-SNOWFLAKE_ROLE = 'YOUR_SNOWFLAKE_ROLE'
-
-# PostgreSQL credentials
-POSTGRES_HOST = 'YOUR_POSTGRES_HOST'
-POSTGRES_DB = 'YOUR_POSTGRES_DB'
-POSTGRES_USER = 'YOUR_POSTGRES_USER'
-POSTGRES_PASSWORD = 'YOUR_POSTGRES_PASSWORD'
-POSTGRES_PORT = 'YOUR_POSTGRES_PORT'
-
-# Initialize Binance API client
 
 
 def initialize_binance_client():
     return Client(API_KEY, API_SECRET)
-
-# Fetch historical kline data for specified pairs
 
 
 def get_historical_klines(client, pairs, start_date, end_date):
     historical_data = {}
     for pair in pairs:
         try:
-            # Fetch historical data with 4-hour candlestick interval
             history_data = client.get_historical_klines(
                 pair, Client.KLINE_INTERVAL_4HOUR, start_date, end_date)
             historical_data[pair] = history_data
@@ -55,13 +32,80 @@ def get_historical_klines(client, pairs, start_date, end_date):
             print(f"Failed to fetch data for {pair}: {e}")
     return historical_data
 
-# Convert timestamp to datetime object
-
 
 def timestamp_to_datetime(timestamp):
     return datetime.datetime.fromtimestamp(timestamp / 1000)
 
-# Model the fetched data into DataFrame
+
+# s3_integration.py
+
+AWS_KEY_ID = 'AKIAZQ3DQVW5HEBI465G'
+AWS_SECRET_ACCESS_KEY = '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'
+
+
+def upload_to_s3_and_grant_permissions(data, bucket_name, file_name):
+    s3 = boto3.client('s3', aws_access_key_id=AWS_KEY_ID,
+                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    s3.create_bucket(Bucket=bucket_name)
+    s3.put_object(Body=data, Bucket=bucket_name, Key=file_name)
+
+    # Generate a presigned URL with public-read access
+    url = s3.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': bucket_name, 'Key': file_name},
+        ExpiresIn=3600,  # URL expiration time (1 hour)
+        HttpMethod='GET',  # Allow GET requests
+    )
+
+    return url
+
+
+def persist_to_snowflake(bucket_name, file_name, user, password, account, warehouse, database, role):
+    try:
+        # Connect to Snowflake
+        ctx = snowflake.connector.connect(
+            user=user,
+            password=password,
+            account=account,
+            warehouse=warehouse,
+            database=database,
+            role=role
+        )
+        cursor = ctx.cursor()
+
+        # Create a temporary stage in Snowflake with a qualified name
+        stage_name = f"{database}.public.tmp_stage_{
+            file_name.replace('.', '_')}"
+        cursor.execute(f"CREATE OR REPLACE STAGE {stage_name}")
+
+        # Download data from S3
+        s3 = boto3.client('s3')
+        response = s3.get_object(Bucket=bucket_name, Key=file_name)
+        data = response['Body'].read()
+
+        # Upload data to the Snowflake stage
+        with BytesIO(data) as data_stream:
+            cursor.execute(
+                f"PUT 's3://{bucket_name}/{file_name}' @{stage_name}")
+
+        # Copy data from the stage into Snowflake table
+        cursor.execute(
+            f"COPY INTO history_data FROM @{stage_name}/{file_name} FILE_FORMAT=(TYPE='CSV')")
+
+        # Commit transaction
+        ctx.commit()
+        print("Data uploaded to Snowflake successfully.")
+
+    except Exception as e:
+        print(f"Error uploading data to Snowflake: {e}")
+
+    finally:
+        # Close cursor and connection
+        cursor.close()
+        ctx.close()
+
+
+# main.py
 
 
 def model_data(historical_data):
@@ -90,69 +134,11 @@ def model_data(historical_data):
     df.sort_values(by='Time_spot', ascending=False, inplace=True)
     return df
 
-# Save DataFrame to CSV format
-
 
 def save_to_csv(df, file_name):
     csv_buffer = StringIO()
     df.to_csv(csv_buffer, index=False)
     return csv_buffer.getvalue()
-
-# Upload CSV data to S3 bucket and grant permissions to all members
-
-
-def upload_to_s3_and_grant_permissions(data, bucket_name, file_name):
-    s3 = boto3.client('s3', aws_access_key_id=AWS_KEY_ID,
-                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-    s3.create_bucket(Bucket=bucket_name)
-    s3.put_object(Body=data, Bucket=bucket_name,
-                  Key=file_name, ACL='public-read')
-    # Grant public access to the bucket
-    s3.put_bucket_acl(ACL='public-read', Bucket=bucket_name)
-    url = s3.generate_presigned_url(
-        'get_object', Params={'Bucket': bucket_name, 'Key': file_name}, ExpiresIn=3600)
-    return url
-
-# Persist data to Snowflake data warehouse
-
-
-def persist_to_snowflake(data, user, password, account, database, warehouse, role, file_name):
-    ctx = snowflake.connector.connect(
-        user=user,
-        password=password,
-        account=account,
-        warehouse=warehouse,
-        database=database,
-        role=role
-    )
-    cursor = ctx.cursor()
-    with zipfile.ZipFile('history_data.zip', 'w') as zip_file:
-        zip_file.writestr(file_name, data)
-    with open('history_data.zip', 'rb') as f:
-        cursor.execute(
-            "CREATE TABLE IF NOT EXISTS history_data (data VARIANT)")
-        cursor.execute("PUT file://" + 'history_data.zip' + " @%history_data")
-        cursor.execute(
-            "COPY INTO history_data from @%history_data FILE_FORMAT=(TYPE= 'csv')")
-    cursor.close()
-    ctx.close()
-
-# Persist data to PostgreSQL database
-
-
-def persist_to_postgres(data, host, database, user, password, port, file_name):
-    conn = psycopg2.connect(host=host, database=database,
-                            user=user, password=password, port=port)
-    cursor = conn.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS history_data (data BYTEA)")
-    with open('history_data.zip', 'rb') as f:
-        cursor.execute("INSERT INTO history_data (data) VALUES (%s)",
-                       (psycopg2.Binary(f.read()),))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-# Main function
 
 
 def main():
@@ -178,22 +164,35 @@ def main():
     csv_data = save_to_csv(df, 'history_data.csv')
 
     # Upload CSV data to S3 and grant permissions
-    bucket_name = 'binance_2024_data'
+    bucket_name = 'binance-trestle-data-2024'
     file_name = 'history_data.csv'
     url = upload_to_s3_and_grant_permissions(csv_data, bucket_name, file_name)
+    print(f'CLICK ON LINK BELOW TO GET DATA IN ".csv"\n--->>> {url}')
 
     # Persist data to Snowflake data warehouse
-    persist_to_snowflake(csv_data, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, SNOWFLAKE_ACCOUNT,
-                         SNOWFLAKE_DATABASE, SNOWFLAKE_WAREHOUSE, SNOWFLAKE_ROLE, file_name)
+    User = 'SLYNOS'
+    Password = 'Cloud1ngineering'
+    Account = 'qeb24678.us-east-1'
+    Database = 'BINANCE_DATA'
+    Warehouse = 'BINANCE'
+    Role = 'ACCOUNTADMIN'
+    persist_to_snowflake(csv_data, user=User, password=Password,
+                         account=Account, database=Database,
+                         warehouse=Warehouse, role=Role, file_name=Role)
 
     # Persist data to PostgreSQL database
-    persist_to_postgres(csv_data, POSTGRES_HOST, POSTGRES_DB,
-                        POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT, file_name)
+    Host = 'localhost'
+    Database = 'Binance_DB'
+    User = 'postgres'
+    Password = 'post123'
+
+    persist_to_postgres(csv_data, host=Host, database=Database,
+                        user=User, password=Password,
+                        port=5432, file_name=file_name)
 
     # Print script execution time
     print("Run time:", datetime.datetime.now() - start_time)
 
 
-# Execute the main function
 if __name__ == "__main__":
     main()
