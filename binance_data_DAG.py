@@ -1,7 +1,12 @@
+"""
+Module for orchestrating data workflow from Binance to S3, Snowflake, and PostgreSQL.
+"""
+
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from binance_data import get_historical_klines, model_data
+from binance_data import get_historical_klines
+from binance_data import model_data
 from s3_integration import upload_to_s3_and_grant_permissions
 from snowflake_integration import persist_to_snowflake
 from postgres_integration import persist_to_postgres
@@ -25,6 +30,9 @@ dag = DAG(
 
 
 def fetch_and_process_data(**kwargs):
+    """
+    Fetches historical data from Binance and processes it.
+    """
     historical_data = get_historical_klines()
     df = model_data(historical_data)
     return df
@@ -39,9 +47,12 @@ fetch_data_task = PythonOperator(
 
 
 def upload_to_s3(**kwargs):
+    """
+    Uploads processed data to S3.
+    """
     df = kwargs['task_instance'].xcom_pull(task_ids='fetch_data')
     csv_data = df.to_csv(index=False)
-    url = upload_to_s3_and_grant_permissions(
+    upload_to_s3_and_grant_permissions(
         csv_data, 'binance-data', 'history_data.csv')
 
 
