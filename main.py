@@ -78,11 +78,11 @@ def main():
     Database = 'BINANCE_DATA'
     Warehouse = 'BINANCE'
     Role = 'ACCOUNTADMIN'
-    fileName = file_name
+    # fileName = file_name
 
     persist_to_snowflake(csv_data, user=User, password=Password,
                          account=Account, database=Database,
-                         warehouse=Warehouse, role=Role, file_name=fileName)
+                         warehouse=Warehouse, role=Role, file_name=file_name)
 
     # Persist data to PostgreSQL database
     Host = 'localhost'
@@ -92,7 +92,7 @@ def main():
 
     persist_to_postgres(csv_data, host=Host, database=Database,
                         user=User, password=Password,
-                        port=5432)
+                        port=5432, file_name=file_name)
 
     # Print script execution time
     print("Run time:", datetime.datetime.now() - start_time)
