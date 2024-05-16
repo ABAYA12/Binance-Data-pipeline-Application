@@ -68,6 +68,7 @@ def main():
     bucket_name = 'binance-trestle-data-2024'
     file_name = 'history_data.csv'
     url = upload_to_s3_and_grant_permissions(csv_data, bucket_name, file_name)
+    print()
     print(f'CLICK ON LINK BELOW TO GET DATA IN ".csv"\n--->>> {url}')
 
     # Persist data to Snowflake data warehouse
@@ -77,9 +78,11 @@ def main():
     Database = 'BINANCE_DATA'
     Warehouse = 'BINANCE'
     Role = 'ACCOUNTADMIN'
+    fileName = file_name
+
     persist_to_snowflake(csv_data, user=User, password=Password,
                          account=Account, database=Database,
-                         warehouse=Warehouse, role=Role, file_name=Role)
+                         warehouse=Warehouse, role=Role, file_name=fileName)
 
     # Persist data to PostgreSQL database
     Host = 'localhost'
@@ -89,7 +92,7 @@ def main():
 
     persist_to_postgres(csv_data, host=Host, database=Database,
                         user=User, password=Password,
-                        port=5432, file_name=file_name)
+                        port=5432)
 
     # Print script execution time
     print("Run time:", datetime.datetime.now() - start_time)
