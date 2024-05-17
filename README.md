@@ -14,7 +14,7 @@ This project aims to build a robust data pipeline for acquiring, cleaning, model
 - **Technical_Documentation.pdf**: Detailed document outlining architecture, design rationale, and technical considerations.
 
 ## Technical Documentation (Summary)
-# Click on the link to read full documentaion
+## Click on the link to read full documentaion
 ----->>>>>: https://docs.google.com/document/d/1xKBf3_GB0UvxeIiGeG_701HfijnF0NNLF7HzvMY3mMU/
 
 ### 1. Data Acquisition
