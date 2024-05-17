@@ -27,8 +27,9 @@ This project aims to build a robust data pipeline for acquiring, cleaning, model
 - Reads data from S3 and loads it into Redshift via `data_warehousing.py`.
 ### 5. Data Consumption
 - Provides flexibility to read data from S3 or a traditional RDS database using `data_consumption.py`.
-### 6. Data Visualization 
-- To visualize the project, here is a screenshot of the data ingestion process from the Binance website: [Insert image of data_visualization.jpg in actiong
+## Dashboard Visualization
+### Link to Dashboad: https://app.powerbi.com/groups/me/reports/ce65db2c-22ad-4cc4-a1cd-434d406421ac?ctid=4487b52f-f118-4830-b49d-3c298cb71075&pbi_source=linkShare
+  ![WhatsApp Image 2024-05-17 at 17 41 24_bf88898f](https://github.com/ABAYA12/binance-data/assets/127341105/d4d57987-75df-49f5-b684-9dab33469270)
 
 ## System Design
 - Adopts an Append system design for continuous addition of new data.
