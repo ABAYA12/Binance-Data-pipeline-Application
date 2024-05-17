@@ -50,11 +50,11 @@ This project aims to build a robust data pipeline for acquiring, cleaning, model
 - Libraries: BeautifulSoup, Pandas, Boto3, Psycopg2, etc. (See `requirements.txt`)
 
 ## Contributors
-- [Justice]
-- [Ishmael]
-- [Slvester]
-- [Name]
-- [Abigail]
+- Justice O. Amofa
+- Ishmael Abayatey
+- Slvester Kodzotse 
+- Peter K. Eduah 
+- Abigail Odonkor 
 
 ## License
 This project is licensed under the [License Name] License - see the [LICENSE](LICENSE) file for details.
