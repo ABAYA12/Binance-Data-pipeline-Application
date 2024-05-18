@@ -1,3 +1,4 @@
+
 import zipfile
 from io import BytesIO
 import snowflake.connector
@@ -44,14 +45,27 @@ def persist_to_snowflake(bucket_name, file_name, user, password, account, wareho
             )
         """)
 
-        # Create a temporary stage in Snowflake with a qualified name
-        stage_name = f"""{database}.{schema}.tmp_stage_{
-            file_name.replace('.', '_')}"""
-        cursor.execute(f"CREATE OR REPLACE STAGE {stage_name}")
+        # Initialize S3 client
+        s3 = boto3.client('s3')
 
-        # Copy data from the zip file in the stage into Snowflake table
-        cursor.execute(
-            f"COPY INTO {schema}.history_data FROM '@{stage_name}/{file_name}.zip' FILE_FORMAT=(TYPE='CSV', FIELD_OPTIONALLY_ENCLOSED_BY='\"', SKIP_HEADER=1)")
+        # Get the zip file from S3
+        response = s3.get_object(Bucket=bucket_name, Key=file_name)
+        zip_file_bytes = response['Body'].read()
+
+        # Read the zip file content
+        with zipfile.ZipFile(BytesIO(zip_file_bytes)) as zip_file:
+            for contained_file in zip_file.namelist():
+                with zip_file.open(contained_file) as file:
+                    # Load data into Snowflake from the extracted file
+                    cursor.execute(
+                        f"PUT file://{file.name} @{stage_name}/{contained_file}")
+                    cursor.execute(
+                        f"""
+                        COPY INTO {schema}.history_data
+                        FROM '@{stage_name}/{contained_file}'
+                        FILE_FORMAT=(TYPE='CSV', FIELD_OPTIONALLY_ENCLOSED_BY='"', SKIP_HEADER=1)
+                        """
+                    )
 
         # Commit transaction
         ctx.commit()
@@ -64,3 +78,7 @@ def persist_to_snowflake(bucket_name, file_name, user, password, account, wareho
         # Close cursor and connection
         cursor.close()
         ctx.close()
+
+
+if __name__ == "__main__":
+    pass   # any logic can be added here by removing the pass statement
