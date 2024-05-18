@@ -3,6 +3,9 @@
 
 ## Overview
 This project aims to build a robust data pipeline for acquiring, cleaning, modeling, persisting, warehousing, and consuming data. The pipeline is designed to handle data from [Binance](https://binance.com), providing a comprehensive dataset for further analysis and visualization.
+## Dashboard Visualization
+### [Link to Dashboad:](https://app.powerbi.com/groups/me/reports/ce65db2c-22ad-4cc4-a1cd-434d406421ac?ctid=4487b52f-f118-4830-b49d-3c298cb71075&pbi_source=linkShare)
+WhatsApp Image 2024-05-17 at 17 41 24_bf88898f](https://github.com/ABAYA12/binance-data/assets/127341105/d4d57987-75df-49f5-b684-9dab33469270)
 
 ## Project Structure
 - `**binance_data.py`**: Script for scraping data data from Binance website.
@@ -30,9 +33,6 @@ This project aims to build a robust data pipeline for acquiring, cleaning, model
 - Reads data from s3 bucket and stores it in PostgreSQL
 ### 6. Data Consumption
 - Provides flexibility to read data from S3 or a traditional RDS database for visualization. open `Binance.pbix`.
-## Dashboard Visualization
-### [Link to Dashboad:](https://app.powerbi.com/groups/me/reports/ce65db2c-22ad-4cc4-a1cd-434d406421ac?ctid=4487b52f-f118-4830-b49d-3c298cb71075&pbi_source=linkShare)
-  ![WhatsApp Image 2024-05-17 at 17 41 24_bf88898f](https://github.com/ABAYA12/binance-data/assets/127341105/d4d57987-75df-49f5-b684-9dab33469270)
 
 ## System Design
 - Adopts an Append system design for continuous addition of new data.
