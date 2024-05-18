@@ -15,11 +15,8 @@ This project aims to build a robust data pipeline for acquiring, cleaning, model
 - **`Technical_Documentation.pdf`**: Detailed document outlining architecture, design rationale, and technical considerations.
 
 ## Technical Documentation (Summary)
-## Click on the link to read full documentaion
-![Technical Doc](https://github.com/ABAYA12/binance-data/blob/main/Technical%20Document.pdf)
+## Click here to read technical documentation : ![Technical Doc](https://github.com/ABAYA12/binance-data/blob/main/Technical%20Document.pdf)
 
-
------>>>>>:[ https://docs.google.com/document/d/1xKBf3_GB0UvxeIiGeG_701HfijnF0NNLF7HzvMY3mMU/](https://docs.google.com/document/d/1xKBf3_GB0UvxeIiGeG_701HfijnF0NNLF7HzvMY3mMU/edit)
 
 ### 1. Data Acquisition
 - Utilizes `data_ingestion.py` to scrape data from Binance.com.
