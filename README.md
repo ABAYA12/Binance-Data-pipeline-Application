@@ -31,8 +31,8 @@ This project aims to build a robust data pipeline for acquiring, cleaning, model
 ### 6. Data Consumption
 - Provides flexibility to read data from S3 or a traditional RDS database for visualization. open `Binance.pbix`.
 ## Dashboard Visualization
-### 
-[Link to Dashboad:](https://app.powerbi.com/groups/me/reports/ce65db2c-22ad-4cc4-a1cd-434d406421ac?ctid=4487b52f-f118-4830-b49d-3c298cb71075&pbi_source=linkShare)
+### [Link to Dashboad:](https://app.powerbi.com/groups/me/reports/ce65db2c-22ad-4cc4-a1cd-434d406421ac?ctid=4487b52f-f118-4830-b49d-3c298cb71075&pbi_source=linkShare)
+
 ![WhatsApp Image 2024-05-17 at 17 41 24_2cf2f69e](https://github.com/ABAYA12/binance-data/assets/127341105/67bbafc4-5baa-4b5c-b5d5-8c35d75eac42)
 
 
