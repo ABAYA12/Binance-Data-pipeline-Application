@@ -10,6 +10,7 @@ from binance_data import model_data
 from s3_integration import upload_to_s3_and_grant_permissions
 from snowflake_integration import persist_to_snowflake
 from postgres_integration import persist_to_postgres
+from main import model_data
 
 default_args = {
     'owner': 'airflow',
@@ -26,8 +27,7 @@ dag = DAG(
     default_args=default_args,
     description='DAG to fetch data from Binance, upload to S3, and persist to Snowflake and PostgreSQL',
     schedule_interval=timedelta(hours=8),  # Run every 8 hours
-)
-
+)    
 
 def fetch_and_process_data(**kwargs):
     """
